@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<meta name="author" content="Kenneth Hu">
+    <title>Web3js示例</title>
+
+    <link rel="stylesheet" type="text/css" href="css/main.css">
+</head>
+<body>
+    <div class="container">
+
+        <h1>Web3js示例展示</h1>
+
+        <label for="name"><h3>节点信息</h3></label>
+        连接节点 : &nbsp; &nbsp;<input id="NodeInfo" type="text" disabled>
+		
+		<hr>
+
+        <label for="name"><h3>账户信息</h3></label>
+		<p>账户地址 : &nbsp; &nbsp;<input id="Account" type="text"> </p>
+        <p>账户余额 : &nbsp; &nbsp;<input id="Balance" type="text"></p>
+		<button id="checkBalance">查询余额</button>
+
+		<hr>
+		<label for="name"><h3>交易</h3></label>
+		<p>转入账户地址 : &nbsp; &nbsp; &nbsp; <input id="From" type="text"> 默认上面查到的账户地址</p>
+		<p>输出账户地址 : &nbsp; &nbsp; &nbsp; <input id="To" type="text" value="0xbb44a15462C5c5042A74b4Adc770793A7E57210a"> 默认我的账户地址</p>
+        <p>转账金额 : &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <input id="Amount" type="text"> 单位：Wei</p>
+        <p>生成的交易Hash : &nbsp;  <span id="Tx"></span></p>
+        <button id="Transfer">转账</button>
+
+		<hr>
+		<label for="name"><h3>合约</h3></label>
+			
+		<p>合约源码 : &nbsp; &nbsp; &nbsp; <textarea id="code" disabled>
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.7;
+
+/// @dev 测试合约
+contract TestContract {
+	// 状态变量 - 消息
+	string message;
+
+	/// @dev 构造函数 - 初始化消息
+	constructor() {
+		message = "Hello World!";
+	}
+
+	/// @dev 查询消息
+	function getMsg() external view returns (string memory) {
+		return message;
+	}
+
+	/// @dev 设置消息
+	function setMsg(string memory _msg) external {
+		message = _msg;
+	}
+}</textarea></p>
+		<p>合约 ABI : &nbsp; &nbsp; &nbsp; <textarea id="abi" disabled>[
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "_msg",
+				"type": "string"
+			}
+		],
+		"name": "setMsg",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"inputs": [],
+		"name": "getMsg",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+]</textarea></p>
+		<p>合约部署 : &nbsp; &nbsp; &nbsp; 以太坊测试链Ropsten Test Network </p>
+		<p>合约地址 : &nbsp; &nbsp; &nbsp; <input id="address" type="text" value="0x13CCB62EaE384fbcAacA1c24b58ac27f49D717cD" disabled> </p>
+       
+		<p>调用合约 - 查询消息 : &nbsp; <input id="getMsg" type="text" disabled><button id="GetMsg">查询消息</button></p>
+
+		<p>调用合约 -设置消息 : &nbsp; <input id="setMsg" type="text">
+		<p>生成的交易Hash : &nbsp; <span id="TxContract"></span></p>
+		<button id="SetMsg">设置消息</button></p>
+
+    </div>
+
+    <script src="js/web3.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+    <script>
+    
+		$( document ).ready(function() {
+			console.log( "ready!" );
+
+			console.log("window.ethereum===",window.ethereum)
+			 //判断是否支持浏览器钱包
+			 if (!window.ethereum) {
+				alert("没有浏览器钱包，请先下载浏览器钱包");
+				return false;
+			}
+			
+			// 获取服务提供器，若没有，则可设置成自己的服务提供器
+			if (typeof web3 !== 'undefined') {
+				web3 = new Web3(web3.currentProvider);
+			} else {
+				web3 = new Web3(new Web3.providers.HttpProvider("https://192.168.237.110:8545"));
+			}
+
+			/* 节点信息 - 提前加载 */
+			web3.eth.getNodeInfo(function(error, result){
+				if(error){
+					console.log( "error" ,error);
+				}
+				else{
+					$('#NodeInfo').val(result);
+				}
+			});
+
+			/* 账户信息 - 提前加载*/		
+			web3.eth.getAccounts(function(error, accounts) {
+				if(error) {
+					console.log(error);
+				} else {
+					$('#Account').val(accounts[0]);
+					$('#From').val(accounts[0]);
+					web3.eth.getBalance(accounts[0]).then(function(result){
+						$('#Balance').val(web3.utils.fromWei(result, 'ether'));
+					});
+				}
+			});
+			
+			/* 事件 - 查询账户余额 */
+			$('#checkBalance').click(function() {
+			    var _account = $('#Account').val();
+				if (_account == "") {
+					alert("请输入账户地址");
+					return;
+				}
+				web3.eth.getBalance(_account).then(function(result){
+					$('#Balance').val(web3.utils.fromWei(result, 'ether'));
+				});
+			});
+			
+			
+			/* 事件 - 转账 */
+			$('#Transfer').click(function() {
+				$('#Tx').text('');
+				var _from = $('#From').val();
+			    var _to = $('#To').val();
+				var _Amount = $('#Amount').val();
+				
+				if (_from == "") {
+					alert("请入输入账户地址");
+					return;
+				}
+				
+				if (_to == "") {
+					alert("请入输出账户地址");
+					return;
+				}
+				
+				if (_Amount == "") {
+					alert("请入输入转账金额");
+					return;
+				}
+				var txnObject = {
+					"from":_from,
+					"to": _to,
+					"value": web3.utils.toWei(_Amount,'ether'),
+					"gas": 3000000,        // (可选)
+					// "gasPrice": 4500000,  (可选)
+					// "data": 'For testing' (可选)
+					// "nonce": 10           (可选)
+				}
+			
+				web3.eth.sendTransaction(txnObject, function(error, result){
+					if(error){
+						alert("转账失败，错误信息：" + error.message);
+					}
+					else{
+						//显示生成的交易hash
+						var txn_hash = result; 
+						$('#Tx').text(txn_hash);
+					}
+				});
+				
+			});
+
+			
+			/* 合约 */
+			// 合约地址
+			var address = $("#address").val();
+			// 合约ABI
+			var abi = $("#abi").val();
+			abi = JSON.parse(abi);
+
+			// 创建合约对象
+			var myContract = new web3.eth.Contract(abi, address);
+
+			// 显示消息
+			function getMsg() {			
+				myContract.methods.getMsg().call().then(function(msg){
+						$("#getMsg").val(msg);
+					});
+			}
+
+			// 显示消息 - 提前显示
+			getMsg();
+
+			/* 事件 - 查询消息 */
+			$("#GetMsg").click(function() {
+				getMsg();
+			});
+
+			/* 事件 - 设置消息 */
+			$("#SetMsg").click(function() {
+
+				var newMsg = $("#setMsg").val();
+				if (newMsg == "") {
+					alert("请输入要设置的消息");
+					return;
+				}
+
+				const sendFunc = async () => {
+					try {
+						const accounts = await web3.eth.getAccounts();
+
+						//调用合约函数
+						myContract.methods.setMsg(newMsg).send({
+							from: accounts[0],
+							gas: 3000000
+						}).on("transactionHash", function(hash){
+							// 显示交易Hash
+							$('#TxContract').text(hash);
+						}).on("receipt", function(receipt) {
+							console.log("receipt==", receipt);
+							if (receipt.status) {
+								alert("设置成功");
+							} else {
+								alert("设置失败");
+							}
+						}).on("error", function(error) {
+							alert("交易发生错误：" + error);
+						});
+
+						return accounts;
+
+					} catch (err) {
+						console.log(err);
+					}
+				}
+
+				sendFunc();
+			});
+
+		
+		});
+	
+    </script>
+
+</body>
+</html>

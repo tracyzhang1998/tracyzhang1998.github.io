@@ -1,0 +1,37 @@
+body {
+    background-color:#fff;
+    padding: 2em;
+    font-family: 'Poppins-Regular';
+}
+.container {
+    width: 50%;
+    margin: 0 auto;
+}
+label {
+    display:block;
+    margin-bottom:10px;
+}
+input {
+    padding:10px;
+    width: 50%;
+    margin-bottom: 1em;
+}
+textarea {
+    height: 300px;
+    width: 70%;
+}
+button {
+    margin: 1em 0;
+    padding: 0.7em 2em;
+    display:flex;
+    background-color: #57b846;
+    color: #fff;
+    font-size: 18px;
+    align-items: center;
+    justify-content: center;
+    border: none;
+}
+button:hover {
+    background-color: #57b990;
+    cursor: pointer;
+}
