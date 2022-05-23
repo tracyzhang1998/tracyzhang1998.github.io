@@ -21,14 +21,14 @@
 
         <label for="name"><h3>账户信息</h3></label>
 		<p>账户地址 : &nbsp; &nbsp;<input id="Account" type="text"> </p>
-        <p>账户余额 : &nbsp; &nbsp;<input id="Balance" type="text"></p>
+        <p>账户余额 : &nbsp; &nbsp;<input id="Balance" type="text" disabled></p>
 		<button id="checkBalance">查询余额</button>
 
 		<hr>
 		<label for="name"><h3>交易</h3></label>
 		<p>转入账户地址 : &nbsp; &nbsp; &nbsp; <input id="From" type="text"> 默认上面查到的账户地址</p>
 		<p>输出账户地址 : &nbsp; &nbsp; &nbsp; <input id="To" type="text" value="0xbb44a15462C5c5042A74b4Adc770793A7E57210a"> 默认我的账户地址</p>
-        <p>转账金额 : &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <input id="Amount" type="text"> 单位：Wei</p>
+        <p>转账金额 : &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <input id="Amount" type="text"> 单位：Ether</p>
         <p>生成的交易Hash : &nbsp;  <span id="Tx"></span></p>
         <button id="Transfer">转账</button>
 
