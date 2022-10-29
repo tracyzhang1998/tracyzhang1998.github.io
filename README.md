@@ -1,5 +1,3 @@
-使用说明可详见（有图说明）：https://blog.csdn.net/ling1998/article/details/124919822?spm=1001.2014.3001.5501
-
 # 访问网址
 访问如下网址（github服务），可在线预览效果及功能体验  
 https://tracyzhang1998.github.io/demo.html
